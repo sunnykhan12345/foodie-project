@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary:#fff4f1;
+  --color-solid:#dc583e;
+  --color-solidOne:#ac2c28;
+  --color-solidTwo:#fd872f;
+  --color-tertiry:#d95942;
+  --color-gray-50:#7d7d7d;
+}
+html,body{
+  background-color: var(--color-primary);
+  scroll-behavior: smooth;
+  font-family: "Inter", sans-serf;
+}
+
+::-webkit-scrollbar{
+ display: none;
+}
+@layer components {
+  .max-padd-container{
+  @apply mx-auto max-w-[1440px] px-4 lg:px-12
+  }
+}
