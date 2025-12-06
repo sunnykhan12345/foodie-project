@@ -1,14 +1,15 @@
-import React from 'react'
+import React from "react";
+import Hero from "../components/Hero";
 
 const Home = () => {
   return (
-    <div className='mt-44'>
-      Home
+    <div className="">
+      <Hero />
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
 // "use client";
 // import React, { useState, useRef, Fragment } from "react";
 // import Link from "next/link";
