@@ -9,12 +9,16 @@ import AddressForm from "./pages/AddressForm";
 import MyOrder from "./pages/MyOrder";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Signup from "./pages/Signup";
+import Signin from "./pages/Signin";
 const App = () => {
   return (
     <main className="max-padd-container overflow-hidden text-textColor">
-      <Header />
+      {/* <Header /> */}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/signin" element={<Signin />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/" element={<Home />} />
