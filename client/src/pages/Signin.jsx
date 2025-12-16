@@ -111,6 +111,13 @@ const Signin = () => {
             </button>
           </div>
         </div>
+        <div
+          className="text-right mb-4 font-medium cursor-pointer"
+          style={{ color: primaryColor }}
+          onClick={() => navigate("/forget-password")}
+        >
+          forget password
+        </div>
 
         {/* Submit */}
         <button
