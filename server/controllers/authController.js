@@ -1,6 +1,6 @@
 import User from "../modules/User.js";
 import bcrypt from "bcryptjs";
-import genToken from "../utile/token.js";
+import genToken from "../utils/token.js";
 export const Signup = async (req, res) => {
   console.log(req.body);
   try {
