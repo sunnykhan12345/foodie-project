@@ -112,3 +112,53 @@ export const sendOtp = async (req, res) => {
    return res.status(500).json({ message: `send otp error ${eror}` });
   }
 };
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    if (!user.resetOtp || !user.otpExpires) {
+      return res.status(400).json({ message: "OTP not requested" });
+    }
+
+    if (user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    if (user.resetOtp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    user.isOtpVerified = true;
+    user.resetOtp = undefined;
+    user.otpExpires = undefined;
+
+    await user.save();
+
+    return res.status(200).json({ message: "OTP verified successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: `Verify OTP error: ${error.message}` });
+  }
+};
+export const resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user || !user.isOtpVerified) {
+    return res.status(400).json({ message: "OTP verification required" });
+  }
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  user.isOtpVerified = false;
+
+  await user.save();
+
+  res.json({ message: "Password reset successful" });
+};
