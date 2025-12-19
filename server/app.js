@@ -6,6 +6,7 @@ dotenv.config();
 
 import router from "./routes/userRouter.js";
 import cookieParser from "cookie-parser";
+import userRouter from "./routes/user.routes.js";
 const app = express();
 // PORT
 const port = process.env.PORT || 5000;
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api", router);
+app.use("/api", userRouter);
 // Connect to MongoDB
 Connectdb();
 

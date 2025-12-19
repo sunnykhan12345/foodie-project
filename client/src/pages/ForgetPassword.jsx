@@ -1,55 +1,92 @@
+
 import React, { useState } from "react";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaEye, FaRegEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
-import { FaEye, FaRegEyeSlash } from "react-icons/fa";
 
 const ForgetPassword = () => {
-  const [stp, setStep] = useState(1);
-
-  //
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  // for pass
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const navigate = useNavigate();
 
   const primaryColor = "#ff4d2d";
   const borderColor = "#ddd";
   const bgColor = "#fff9f6";
 
-  const handleSubmit = async (e) => {
+  // STEP 1: Send OTP
+  const handleSendOtp = async (e) => {
     e.preventDefault();
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/send-otp",
+        { email },
+        { withCredentials: true }
+      );
+
+      setStep(2);
+      Swal.fire("Success", res.data.message, "success");
+    } catch (err) {
+      Swal.fire(
+        "Error",
+        err.response?.data?.message || "Something went wrong",
+        "error"
+      );
+    }
+  };
+
+  // STEP 2: Verify OTP
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/verify-otp",
+        { email, otp },
+        { withCredentials: true }
+      );
+
+      setStep(3);
+      Swal.fire("Verified", res.data.message, "success");
+    } catch (err) {
+      Swal.fire("Error", err.response?.data?.message || "Invalid OTP", "error");
+    }
+  };
+
+  // STEP 3: Reset Password
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      return Swal.fire("Error", "Passwords do not match", "error");
+    }
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/forget-password",
-        { email }
+        "http://localhost:5000/api/reset-password",
+        { email, newPassword },
+        { withCredentials: true }
       );
 
-      Swal.fire({
-        title: "Email Sent!",
-        text: res.data.message || "Password reset link sent to your email",
-        icon: "success",
-        confirmButtonColor: primaryColor,
-      });
+      Swal.fire("Success", res.data.message, "success");
+      navigate("/signin");
     } catch (err) {
-      Swal.fire({
-        title: "Error!",
-        text: err.response?.data?.message || "Something went wrong",
-        icon: "error",
-        confirmButtonColor: primaryColor,
-      });
+      Swal.fire(
+        "Error",
+        err.response?.data?.message || "Password reset failed",
+        "error"
+      );
     }
   };
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 w-full"
+      className="min-h-screen flex items-center justify-center p-4"
       style={{ backgroundColor: bgColor }}
     >
       <div
@@ -58,118 +95,97 @@ const ForgetPassword = () => {
       >
         <button
           onClick={() => navigate("/signin")}
-          className="absolute left-5 top-10 text-gray-600 hover:text-orange-500 transition"
+          className="absolute left-5 top-10 text-orange-500"
         >
-          <FaArrowLeft size={18} className="text-orange-500 " />
+          <FaArrowLeft size={18} />
         </button>
 
-        <h1
-          className="text-2xl font-bold mb-2 text-center"
-          style={{ color: primaryColor }}
-        >
+        <h1 className="text-2xl font-bold mb-4 text-center text-[#ff4d2d]">
           Forgot Password
         </h1>
-        {stp === 1 && (
-          <div className="mt-5">
-            <div className="mb-6">
-              <label className="block text-gray-700 font-medium mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full border rounded-lg px-2 py-2 focus:outline-none focus:border-orange-500"
-                style={{ border: `1px solid ${borderColor}` }}
-              />
-            </div>
+
+        {/* STEP 1 */}
+        {step === 1 && (
+          <>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="w-full border rounded-lg px-3 py-2 mb-4"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
             <button
-              onClick={handleSubmit}
-              className="cursor-pointer w-full py-2 rounded-lg text-white font-medium transition bg-[#ff4d2d]"
+              onClick={handleSendOtp}
+              className="w-full py-2 bg-[#ff4d2d] text-white rounded-lg"
             >
-              Send Otp
+              Send OTP
             </button>
-          </div>
+          </>
         )}
-        {stp === 2 && (
-          <div className="mt-5">
-            <div className="mb-6">
-              <label className="block text-gray-700 font-medium mb-1">
-                OTP
-              </label>
-              <input
-                type="email"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter OTP"
-                className="w-full border rounded-lg px-2 py-2 focus:outline-none focus:border-orange-500"
-                style={{ border: `1px solid ${borderColor}` }}
-              />
-            </div>
+
+        {/* STEP 2 */}
+        {step === 2 && (
+          <>
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              className="w-full border rounded-lg px-3 py-2 mb-4"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+            />
             <button
-              onClick={handleSubmit}
-              className="cursor-pointer w-full py-2 rounded-lg text-white font-medium transition bg-[#ff4d2d]"
+              onClick={handleVerifyOtp}
+              className="w-full py-2 bg-[#ff4d2d] text-white rounded-lg"
             >
-              Verify
+              Verify OTP
             </button>
-          </div>
+          </>
         )}
-        {stp === 3 && (
-          <div className="mt-5">
-            {/* New Password */}
-            <div className="mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
-                New Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showNewPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password"
-                  className="w-full border rounded-lg px-3 py-2 pr-10 focus:outline-none focus:border-orange-500"
-                  style={{ border: `1px solid ${borderColor}` }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-2.5 text-gray-500"
-                >
-                  {showNewPassword ? <FaRegEyeSlash /> : <FaEye />}
-                </button>
-              </div>
+
+        {/* STEP 3 */}
+        {step === 3 && (
+          <>
+            <div className="relative mb-4">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                placeholder="New Password"
+                className="w-full border rounded-lg px-3 py-2 pr-10"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-2.5 text-gray-500"
+              >
+                {showNewPassword ? <FaRegEyeSlash /> : <FaEye />}
+              </button>
             </div>
 
-            {/* Confirm Password */}
-            <div className="mb-6">
-              <label className="block text-gray-700 font-medium mb-1">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm password"
-                  className="w-full border rounded-lg px-3 py-2 pr-10 focus:outline-none focus:border-orange-500"
-                  style={{ border: `1px solid ${borderColor}` }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-2.5 text-gray-500"
-                >
-                  {showConfirmPassword ? <FaRegEyeSlash /> : <FaEye />}
-                </button>
-              </div>
+            <div className="relative mb-4">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm Password"
+                className="w-full border rounded-lg px-3 py-2 pr-10"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-2.5 text-gray-500"
+              >
+                {showConfirmPassword ? <FaRegEyeSlash /> : <FaEye />}
+              </button>
             </div>
 
-            {/* Submit Button */}
-            <button className="cursor-pointer w-full py-2 rounded-lg text-white font-medium transition bg-[#ff4d2d] hover:bg-orange-600">
+            <button
+              onClick={handleResetPassword}
+              className="w-full py-2 bg-[#ff4d2d] text-white rounded-lg"
+            >
               Reset Password
             </button>
-          </div>
+          </>
         )}
       </div>
     </div>

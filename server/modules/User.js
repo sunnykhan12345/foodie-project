@@ -6,9 +6,14 @@ const userSchema = new mongoose.Schema(
     password: { type: String },
     mobile: { type: String, required: true },
     role: {type: String,enum: ["user", "owner", "deliveryBoy"], default: "user", required: true },
-    restotp:{type:String},
-    isOtpVerified:{type:Boolean,default:false},
-    otpExperies:{type:Date}
+    // restotp:{type:String},
+    // isOtpVerified:{type:Boolean,default:false},
+    // otpExperies:{type:Date}
+        // ✅ FIXED FIELD NAMES
+    resetOtp: { type: String },
+    otpExpires: { type: Date },
+    isOtpVerified: { type: Boolean, default: false },
+  
 
   },
 
