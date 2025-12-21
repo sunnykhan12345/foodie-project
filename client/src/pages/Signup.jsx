@@ -4,6 +4,8 @@ import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +16,7 @@ const Signup = () => {
     role: "user",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const primaryColor = "#ff4d2d";
@@ -37,6 +40,7 @@ const Signup = () => {
         "http://localhost:5000/api/signup",
         formData
       );
+      dispatch(setUserData(res.data));
       console.log(res);
       // alert(res.data.message);
       Swal.fire({

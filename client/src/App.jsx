@@ -1,22 +1,65 @@
 import React from "react";
-import {  Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 
 import Footer from "./components/Footer";
 import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 import ForgetPassword from "./pages/ForgetPassword";
+import useGetCurrentUser from "../hooks/userGetcurrent.js";
+import { useSelector } from "react-redux";
+
+// const App = () => {
+//   useGetCurrentUser();
+//   const { userData } = useSelector((state) => state.user);
+//   return (
+//     <main className="max-padd-container overflow-hidden text-textColor">
+//       <Routes>
+//         <Route
+//           path="/signup"
+//           element={!userData ? <Signup /> : <Navigate to={"/"} />}
+//         />
+//         <Route
+//           path="/signin"
+//           element={!userData ? <Signin /> : <Navigate to={"/"} />}
+//         />
+//         <Route
+//           path="/forget-password"
+//           element={!userData ? <ForgetPassword /> : <Navigate to={"/"} />}
+//         />
+//         <Route
+//           path="/"
+//           element={userData ? <Home /> : <Navigate to={"/signin"} />}
+//         />
+//       </Routes>
+//       <Footer />
+//     </main>
+//   );
+// };
 const App = () => {
+  const { loading } = useGetCurrentUser();
+  const { userData } = useSelector((state) => state.user);
+
+  if (loading) {
+    return <div>Loading...</div>; // spinner or blank screen
+  }
+
   return (
-    <main className="max-padd-container overflow-hidden text-textColor">
-      {/* <Header /> */}
+    <main>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/signin" element={<Signin />} />
-        <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route
+          path="/"
+          element={userData ? <Home /> : <Navigate to="/signin" />}
+        />
+        <Route
+          path="/signin"
+          element={!userData ? <Signin /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/signup"
+          element={!userData ? <Signup /> : <Navigate to="/" />}
+        />
       </Routes>
-      <Footer />
     </main>
   );
 };

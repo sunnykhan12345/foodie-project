@@ -4,6 +4,8 @@ import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 
 const Signin = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +13,7 @@ const Signin = () => {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const primaryColor = "#ff4d2d";
@@ -30,6 +33,7 @@ const Signin = () => {
         { withCredentials: true } // Important if backend sends cookies
       );
       console.log(res.data);
+      dispatch(setUserData(res.data));
       // alert(res.data.message);
       Swal.fire({
         title: "Success!",
@@ -38,7 +42,7 @@ const Signin = () => {
         confirmButtonColor: "#ff4d2d",
       });
       // After successful login, navigate to dashboard or homepage
-      navigate("/");
+      // navigate("/");
     } catch (err) {
       Swal.fire({
         title: "Failed!",
