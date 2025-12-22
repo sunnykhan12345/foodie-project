@@ -25,8 +25,10 @@ app.get("/", (req, res) => {
   res.send("API Successfully Connected!");
 });
 
-app.use("/api", router);
-app.use("/api", userRouter);
+// app.use("/api/user", router);
+// app.use("/api", userRouter);
+app.use("/api/user", router); // auth routes
+app.use("/api/user", userRouter);
 // Connect to MongoDB
 Connectdb();
 

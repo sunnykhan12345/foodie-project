@@ -10,9 +10,9 @@ export const isAuth = async (req, res, next) => {
       return res.status(400).json({ message: "Toekn not verify" });
     }
     console.log(decodedToken);
-    req.userId=decodedToken.userId
-    next()
+    req.userId = decodedToken.userId;
+    next();
   } catch (err) {
-     return res.status(500).json({ message: "is auth error " });
+    return res.status(500).json({ message: "is auth error " });
   }
 };

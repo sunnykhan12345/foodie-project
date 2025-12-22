@@ -2,12 +2,12 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 
-import Footer from "./components/Footer";
 import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 import ForgetPassword from "./pages/ForgetPassword";
 import useGetCurrentUser from "../hooks/userGetcurrent.js";
 import { useSelector } from "react-redux";
+import useGetCity from "../hooks/useGetCity.js";
 
 // const App = () => {
 //   useGetCurrentUser();
@@ -39,7 +39,7 @@ import { useSelector } from "react-redux";
 const App = () => {
   const { loading } = useGetCurrentUser();
   const { userData } = useSelector((state) => state.user);
-
+  useGetCity();
   if (loading) {
     return <div>Loading...</div>; // spinner or blank screen
   }

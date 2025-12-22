@@ -162,20 +162,16 @@ export const sendOtp = async (req, res) => {
 export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
-
     if (!user.resetOtp || !user.otpExpires) {
       return res.status(400).json({ message: "OTP not requested" });
     }
-
     if (user.otpExpires < Date.now()) {
       return res.status(400).json({ message: "OTP expired" });
     }
-
     if (user.resetOtp !== otp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
