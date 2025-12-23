@@ -8,6 +8,7 @@ import ForgetPassword from "./pages/ForgetPassword";
 import useGetCurrentUser from "../hooks/userGetcurrent.js";
 import { useSelector } from "react-redux";
 import useGetCity from "../hooks/useGetCity.js";
+import Croud from "./components/Croud.jsx";
 
 // const App = () => {
 //   useGetCurrentUser();
@@ -59,6 +60,7 @@ const App = () => {
           path="/signup"
           element={!userData ? <Signup /> : <Navigate to="/" />}
         />
+        <Route path="/crud" element={<Croud />} />
       </Routes>
     </main>
   );
