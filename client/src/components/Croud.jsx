@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const Croud = () => {
-  const [open, setOpen] = useState(false);
   const [books, setBooks] = useState([]);
   const [formData, setFormData] = useState({
     BookingName: "",
@@ -11,77 +11,155 @@ const Croud = () => {
     SellingPrice: "",
     PublishDate: "",
   });
+  const [editId, setEditId] = useState(null); // Track which book we are editing
+  const [loading, setLoading] = useState(false); // Loading state for form submission
+
+  // SweetAlert2 toast configuration
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener("mouseenter", Swal.stopTimer);
+      toast.addEventListener("mouseleave", Swal.resumeTimer);
+    },
+  });
 
   // HANDLE INPUT CHANGE
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   // FETCH BOOKS LIST
   const fetchBooks = async () => {
     try {
       const { data } = await axios.get("http://localhost:5000/book/booklists");
-      setBooks(data.booklists); // ✅ Only set the array
+      setBooks(data.booklists);
     } catch (err) {
       console.error(err);
-      alert("Failed to fetch books");
+      Toast.fire({ icon: "error", title: "Failed to fetch books ❌" });
     }
   };
 
   useEffect(() => {
-    fetchBooks(); // Fetch on component mount
+    fetchBooks(); // Fetch books when component mounts
   }, []);
 
-  // SUBMIT FORM
+  // SUBMIT FORM (Create or Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
     try {
       const payload = {
         ...formData,
         SellingPrice: Number(formData.SellingPrice),
-        PublishDate: new Date(formData.PublishDate).getTime(),
+        PublishDate: formData.PublishDate
+          ? new Date(formData.PublishDate).getTime()
+          : null,
       };
 
-      const { data } = await axios.post(
-        "http://localhost:5000/book/add-book",
-        payload
-      );
-
-      if (data?.success) {
-        alert("Book added successfully ✅");
-
-        // Reset form
-        setFormData({
-          BookingName: "",
-          BookingTitle: "",
-          Author: "",
-          SellingPrice: "",
-          PublishDate: "",
-        });
-
-        fetchBooks(); // Refresh list after adding
+      if (editId) {
+        // Update existing booking
+        const { data } = await axios.put(
+          `http://localhost:5000/book/booking/${editId}`,
+          payload
+        );
+        if (data.success)
+          Toast.fire({
+            icon: "success",
+            title: "Booking updated successfully ✅",
+          });
+        setEditId(null); // Reset edit mode
       } else {
-        alert(data?.message || "Failed to add book ❌");
+        // Add new booking
+        const { data } = await axios.post(
+          "http://localhost:5000/book/add-book",
+          payload
+        );
+        if (data.success)
+          Toast.fire({
+            icon: "success",
+            title: "Booking added successfully ✅",
+          });
       }
+
+      // Reset form
+      setFormData({
+        BookingName: "",
+        BookingTitle: "",
+        Author: "",
+        SellingPrice: "",
+        PublishDate: "",
+      });
+
+      fetchBooks(); // Refresh list
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.message || "Something went wrong ❌");
+      Toast.fire({
+        icon: "error",
+        title: err?.response?.data?.message || "Something went wrong ❌",
+      });
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
+  // DELETE BOOK WITH SWEETALERT2 CONFIRM
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const { data } = await axios.delete(
+          `http://localhost:5000/book/booking/${id}`
+        );
+        if (data.success)
+          Toast.fire({
+            icon: "success",
+            title: "Booking deleted successfully ✅",
+          });
+        fetchBooks();
+      } catch (err) {
+        console.error(err);
+        Toast.fire({
+          icon: "error",
+          title: err?.response?.data?.message || "Something went wrong ❌",
+        });
+      }
+    }
+  };
+
+  // PREFILL FORM FOR EDIT
+  const handleEdit = (item) => {
+    setFormData({
+      BookingName: item.BookingName,
+      BookingTitle: item.BookingTitle,
+      Author: item.Author,
+      SellingPrice: item.SellingPrice,
+      PublishDate: item.PublishDate
+        ? new Date(item.PublishDate).toISOString().split("T")[0]
+        : "",
+    });
+    setEditId(item._id);
+  };
+
   return (
-    <section className="min-h-screen bg-gray-50">
+    <section className="min-h-screen bg-[#fff4f1]">
       {/* NAVBAR */}
       <nav className="w-full bg-white shadow">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between">
           <h1 className="text-2xl font-bold text-[#ff4d2d]">Booking App</h1>
-          <button onClick={() => setOpen(!open)} className="md:hidden text-2xl">
-            ☰
-          </button>
         </div>
       </nav>
 
@@ -99,7 +177,6 @@ const Croud = () => {
             className="border p-3 rounded-lg"
             required
           />
-
           <input
             name="BookingTitle"
             value={formData.BookingTitle}
@@ -108,7 +185,6 @@ const Croud = () => {
             className="border p-3 rounded-lg"
             required
           />
-
           <input
             name="Author"
             value={formData.Author}
@@ -117,7 +193,6 @@ const Croud = () => {
             className="border p-3 rounded-lg"
             required
           />
-
           <input
             name="SellingPrice"
             value={formData.SellingPrice}
@@ -127,7 +202,6 @@ const Croud = () => {
             className="border p-3 rounded-lg"
             required
           />
-
           <input
             name="PublishDate"
             value={formData.PublishDate}
@@ -135,13 +209,17 @@ const Croud = () => {
             type="date"
             className="border p-3 rounded-lg"
           />
-
           <div className="lg:col-span-5 text-right">
             <button
               type="submit"
-              className="px-10 py-3 bg-[#ff4d2d] text-white rounded-xl hover:opacity-90"
+              disabled={loading}
+              className="!cursor-pointer px-10 py-3 bg-[#060047] text-white rounded-xl hover:opacity-90 disabled:opacity-50"
             >
-              Submit
+              {loading
+                ? "Saving..."
+                : editId
+                ? "Update Booking"
+                : "Add Booking"}
             </button>
           </div>
         </form>
@@ -158,13 +236,13 @@ const Croud = () => {
                 <th className="p-4 text-left">Author</th>
                 <th className="p-4 text-left">Price</th>
                 <th className="p-4 text-left">Publish Date</th>
+                <th className="p-4 text-left">Actions</th>
               </tr>
             </thead>
-
             <tbody>
               {books.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="p-4 text-center text-gray-500">
+                  <td colSpan="6" className="p-4 text-center text-gray-500">
                     No data found
                   </td>
                 </tr>
@@ -179,6 +257,20 @@ const Croud = () => {
                       {item.PublishDate
                         ? new Date(item.PublishDate).toLocaleDateString()
                         : "-"}
+                    </td>
+                    <td className="p-4 flex gap-2">
+                      <button
+                        className="cursor-pointer px-3 py-1 bg-[#060047] text-white rounded"
+                        onClick={() => handleDelete(item._id)}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        className="cursor-pointer px-3 py-1 bg-blue-500 text-white rounded"
+                        onClick={() => handleEdit(item)}
+                      >
+                        Edit
+                      </button>
                     </td>
                   </tr>
                 ))

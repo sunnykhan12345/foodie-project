@@ -51,7 +51,6 @@ const Signup = () => {
       });
       navigate("/signin");
     } catch (err) {
-      // alert(err.response?.data?.message || "Something went wrong");
       Swal.fire({
         title: "Failed!",
         text: err.response?.data?.message || "Something went wrong",
